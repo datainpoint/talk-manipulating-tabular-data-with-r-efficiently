@@ -1,0 +1,396 @@
+---
+title: "Manipulating Tabular Data with R Efficiently"
+author: "Kuo, Yao-Jen"
+title-block-banner: true
+execute:
+  echo: true
+format: 
+  revealjs:
+    theme: dark
+    footer: "NTPU, 2022-11-24"
+    scrollable: true
+    incremental: false
+---
+
+# About me
+
+- Hahow lecturer
+    - [如何成為資料分析師](https://hahow.in/cr/dajourney)
+    - [SQL 的五十道練習](https://hahow.in/cr/sqlfifty)
+    - [Python 的 50+ 練習](https://hahow.in/cr/pythonfiftyplus)
+    - [R 語言的 50+ 練習](https://hahow.in/cr/rfiftyplus)
+- Adjunct lecturer at NTUBA.
+- Senior lecturer at CSIE Training School.
+- [Medium](https://medium.com/datainpoint)
+- [Substack](https://datainpoint.substack.com)
+
+## About me(Cont'd)
+
+- Work
+    - Senior Data Analyst at Coupang.
+    - Analytic Consultant at SAS.
+    - Management Associate at CTBC.
+    - Research Assistant at McKinsey.
+- Education
+    - NTUMBA.
+    - NTUBA.
+    
+# Tabular Data
+
+## What is tabular data
+
+- Data that is organized with rows and columns.
+- Each row has the same columns as the other rows, in the same order.
+- A given column has the same type, but different columns can have different types.
+- The rows are usually in some particular order.
+
+## A variety of tabular data in R
+
+- `matrix`
+- `data.frame`
+- `tibble`
+- `data.table`
+- `xts`
+
+# `matrix`
+
+## What is a `matrix`
+
+A vector with two dimensions is a matrix.
+
+```{r}
+A <- matrix(1:6, nrow = 2)
+B <- 1:6
+dim(B) <- c(2, 3)
+A
+B
+```
+
+## Testing if an object is `matrix`
+
+A `matrix` is also a sub-class of `array`.
+
+```{r}
+class(A)
+is.matrix(A)
+is.array(A)
+```
+
+## Examine the shape of a `matrix`
+
+```{r}
+length(A)
+dim(A)
+nrow(A)
+ncol(A)
+```
+
+## Create rownames and colnames for a `matrix`
+
+```{r}
+rownames(A) <- c("row_1", "row_2")
+colnames(A) <- c("col_1", "col_2", "col_3")
+A
+```
+
+## Subset elements from a `matrix`
+
+```{r}
+A["row_2", "col_1"]
+A["row_2", ]
+A[, "col_1", drop = FALSE]
+```
+
+---
+
+```{r}
+B[2, 1]
+B[2, ]
+B[, 1, drop = FALSE]
+```
+
+## Subset elements with `logical`
+
+```{r}
+A >= 4
+A[A >= 4]
+```
+
+# `data.frame`
+
+## What is a `data.frame`
+
+- A `data.frame` is the most common way of storing data in R.
+- A `data.frame` is a list of equal-length vectors.
+
+```{r}
+#install.packages("dplyr")
+library("dplyr")
+
+dplyr_starwars <- as.data.frame(dplyr::starwars)
+dplyr_starwars
+```
+
+## Testing if an object is `data.frame`
+
+A `data.frame` is also a sub-class of `list`.
+
+```{r}
+class(dplyr_starwars)
+is.data.frame(dplyr_starwars)
+is.list(dplyr_starwars)
+```
+
+## Examine the shape of a `data.frame`
+
+```{r}
+dim(dplyr_starwars)
+nrow(dplyr_starwars)
+ncol(dplyr_starwars)
+```
+
+## Viewing a `data.frame`
+
+```{r}
+head(dplyr_starwars)
+tail(dplyr_starwars)
+#View(dplyr_starwars) # Works in RStudio only
+```
+
+## Rownames and colnames of a `data.frame`
+
+```{r}
+colnames(dplyr_starwars)
+rownames(dplyr_starwars)
+dplyr_starwars |>
+  rownames() |>
+  as.numeric()
+```
+
+## Subsetting a column from a `data.frame`
+
+```{r}
+dplyr_starwars[["name"]]
+dplyr_starwars$name
+```
+
+## Subsetting columns from a `data.frame`
+
+```{r}
+dplyr_starwars[, c("name", "species")]
+dplyr_starwars |>
+  dplyr::select(name, species)
+```
+
+## Subsetting observations from a `data.frame`
+
+```{r}
+dplyr_starwars[dplyr_starwars$hair_color == "blond", ]
+dplyr_starwars |>
+  dplyr::filter(hair_color == "blond")
+```
+
+# `tibble`
+
+## What is a `tibble`
+
+- A modern data frame provides stricter checking and better formatting than the traditional data frame. 
+- Tibble is the central data structure for the set of packages known as the `tidyverse`.
+
+## When is `tibble` being used
+
+- Importing data via `readr`, e.g. importing `.csv` via `readr::read_csv()` instead of `utils::read.csv()`
+- Manipulating data via `dplyr`, `tidyr` , or other `tidyverse` packages.
+
+## Testing if an object is `tibble`
+
+A `tibble` is also a sub-class of `list` and `data.frame`.
+
+```{r}
+class(dplyr::starwars)
+tibble::is_tibble(dplyr::starwars)
+is.data.frame(dplyr::starwars)
+is.list(dplyr::starwars)
+```
+
+## Manipulating a `tibble` is pretty much the same as manipulating a `data.frame`
+
+# `data.table`
+
+## What is a `data.table`
+
+- `data.table` is an extension of `data.frame`.
+- Fast aggregation of large data, fast ordered joins, fast add/modify/delete of columns by group using no copies at all.
+- Offers a natural and flexible syntax for faster development.
+
+## Installation and library of `data.table` library
+
+```{r}
+#install.packages("data.table")
+library("data.table")
+```
+
+## When is `data.table` being used
+
+Importing data via `data.table::fread()`.
+
+## Testing if an object is a `data.table`
+
+A `data.table` is also a sub-class of `list` and `data.frame`.
+
+```{r}
+starwars_dt <- data.table::as.data.table(dplyr::starwars)
+class(starwars_dt)
+data.table::is.data.table(starwars_dt)
+is.data.frame(starwars_dt)
+is.list(starwars_dt)
+```
+## Examine the shape of a `data.table`
+
+```{r}
+dim(starwars_dt)
+nrow(starwars_dt)
+ncol(starwars_dt)
+```
+
+## Viewing a `data.table`
+
+```{r}
+head(starwars_dt)
+tail(starwars_dt)
+#View(starwars_dt) # Works in RStudio only
+```
+
+## Rownames and colnames of a `data.table`
+
+```{r}
+colnames(starwars_dt)
+rownames(starwars_dt)
+starwars_dt |>
+  rownames() |>
+  as.numeric()
+```
+
+## Subsetting a column from a `data.table`
+
+```{r}
+starwars_dt[, name]       # As a vector
+starwars_dt[, list(name)] # As a data.table
+```
+
+## Subsetting columns from a `data.table`
+
+```{r}
+starwars_dt[, list(name, species)]
+```
+
+## Subsetting observations from a `data.table`
+
+```{r}
+starwars_dt[hair_color == "blond", ]
+```
+
+# `xts`
+
+## What is a `xts`
+
+- `xts` stands for eXtensible Time Series
+- A data structure used to store and manipulate time series.
+
+## When is `xts` being used
+
+Importing data via `quantmod`.
+
+```{r}
+#install.packages("quantmod")
+library("quantmod")
+
+start_date <- "2022-01-01"
+AAPL <- getSymbols(Symbols = "AAPL", from = start_date, auto.assign = FALSE)
+```
+
+## Testing if an object is a `xts`
+
+A `xts` is also a sub-class of `matrix`.
+
+```{r}
+class(AAPL)
+xts::is.xts(AAPL)
+is.matrix(AAPL)
+```
+
+## Decomposing a `xts`
+
+```{r}
+aapl_index <- zoo::index(AAPL)
+aapl_coredata <- zoo::coredata(AAPL)
+class(aapl_index)
+class(aapl_coredata)
+```
+
+## Subsetting elements from a `xts`
+
+```{r}
+AAPL[1, 1]
+AAPL[1, "AAPL.Open"]
+```
+
+# Tips for manipulation of tabular data
+
+## Tip no. 1: Transforming between each form
+
+- Subsetting as vectors.
+- `base::as.matrix()`
+- `base::as.data.frame()`
+- `tibble::as.tibble()`
+- `data.table::as.data.table()`
+
+## Tip no. 2: Homogenious is better than heterogeneous
+
+Subsetting tabular data as vector/matrix.
+
+```{r}
+# Good
+class(dplyr::starwars[["height"]])
+dplyr::starwars[, c("height", "mass")] |>
+  as.matrix() |>
+  class()
+# Not so good
+class(dplyr::starwars[, "height"])
+class(dplyr::starwars[, c("height", "mass")])
+```
+
+## Tip no. 3: Vectorization is better than functional programming
+
+```{r}
+# Good
+bmi <- dplyr::starwars[["mass"]] / (dplyr::starwars[["height"]]*0.01)^2
+# Not so good
+bmi <- mapply(function(w, h) {w / (h*0.01)^2}, dplyr::starwars[["mass"]], dplyr::starwars[["height"]])
+```
+
+## Tip no. 4: Functional programming is better than writing loops
+
+```{r}
+# Good
+bmi <- mapply(function(w, h) {w / (h*0.01)^2}, dplyr::starwars[["mass"]], dplyr::starwars[["height"]])
+# Not so good
+bmi <- vector("numeric", length = nrow(dplyr::starwars))
+for (rowi in 1:nrow(dplyr::starwars)) {
+  w <- dplyr::starwars[rowi, "mass"][["mass"]]
+  h <- dplyr::starwars[rowi, "height"][["height"]]
+  bmi[rowi] <- w/(h*0.01)^2
+}
+```
+
+## Tip no. 5: `data.table` is faster than `data.frame`
+
+```{r}
+file_url <- "https://raw.githubusercontent.com/Rdatatable/data.table/master/vignettes/flights14.csv"
+# Good
+flights_dt <- data.table::fread(file_url)
+# Not so good
+flights_df <- utils::read.csv(file_url)
+```
+
+# Q & A
